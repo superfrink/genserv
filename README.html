@@ -1,0 +1,114 @@
+<html>
+  <head>
+    <title>genserv (a generic server program) : SuperFrink.Net</title>
+  </head>
+  
+  <h2>genserv : A Generic Network Server Program</h2>
+  <br>
+  &nbsp; by Chad Clark  &nbsp; &nbsp;
+  <hr>
+  <br>
+  <br>
+  <h4>The Beginning</h4>
+  Supose you have a program written in a language where you don't want to
+  learn how to deal with network sockets or maybe a language that doesn't
+  support sockets directly such as Bash.  What if you want to make this
+  program available on a network?  Well you could write a web based front
+  end.  I chose to write genserv (from Generic or General Server).<br>
+  <br>
+  <br>
+  <h4>The Idea</h4>
+  <ul>
+    <li>There is a C program that listens for a network connect.
+    <li>When a connection is made a child process is forked to deal with
+        the new connection.
+    <li>The child process sets the standard file descriptors (STDIN, STDOUT
+        and STDERR) to all point to the network file descriptor.
+    <li>The child then executes the application we want to connect to the
+        network.
+    <li>The application runs and deals with all I/O on the three standard
+        file descriptors as normal.
+  </ul>
+  This works because of the way Linux handles network connections as files.<br>
+  The application doesn't need to even know the network connection exists.<br>
+  <br>
+  <br>
+  <h4>The Code</h4>
+  The code is all in one C file.<br>
+  There is also a makefile> but it's really simple
+  and is only used because I like make.<br>
+  Just put both files in one directory and type <tt>make</tt>.<br>
+  <br>
+  <br>
+  <h4>Using genserv</h4>
+  From the program's usage description:
+    <blockquote> <pre>
+usage:
+         ./genserv port_num program_name args
+where:
+  "port_num" is a valid TCP port number.
+  "program_name" is a program to be run when a client connects.
+  "args" is an optional list of arguments to the program to be executed.
+
+eg: ./genserv 12345 /usr/bin/uptime
+    will listen on port 12345 and print the uptime string then exit.
+
+eg: ./genserv 12345 /usr/bin/uptime -V
+    will listen on port 12345 and print the uptime version then exit.
+    </pre> </blockquote>
+  <br>
+  In the future I want to add some sort of basic authentication scheme.<br>
+  Most likely just a password that is set when genserv is started.<br>
+  Currently there is no authentication build into genserv so any programs<br>
+  which get run from genserv need to either do their own authentications <br>
+  or be open to the network.<br>
+  <br>
+  It may also be usefull/interesting to read the
+  <a href="http://www.dwheeler.com/secure-programs/">Secure Programming
+  for Linux and Unix HOWTO</a> <br>
+  if you have to write programs which other people will be running.<br>
+  <br>
+  <br>
+  <h4>Testing</h4>
+  All of my work was done a stock
+  <a href="http://www.slackware.com">Slackware Linux</a> 8.1 machine.<br>
+  <br>
+  To test the program run <b><tt>./genserv 12321 ls -l </tt></b>.<br>
+  From another TTY telnet to port 12321 (eg <b><tt>telnet 127.0.0.1 12321</tt>
+  </b>).<br>
+  You should see something like:
+    <pre> <blockquote>
+[frink@thepurplebuffalo ~/code/cxx/genserv]$telnet 127.0.0.1 12321
+Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '^]'.
+total 32
+drwx------    2 frink    users        4096 May 17 18:00 CVS
+-rw-r--r--    1 frink    users          94 May 17 21:46 Makefile
+-rwx------    1 frink    users       16693 May 17 21:46 genserv
+-rw-r--r--    1 frink    users        3887 May 17 21:46 genserv.c
+-rw-------    1 frink    users           0 May 17 21:47 typescript
+Connection closed by foreign host.
+[frink@thepurplebuffalo ~/code/cxx/genserv]$
+    </blockquote> </pre>
+
+  <br>
+  <br>
+  <h4>Known Bugs</h4>
+  <ul>
+    <li>ioctl() causes an issue on "who am i" but not on "who".<br>
+        I belive this is because STDIN is mapped to a network file
+        descriptor and not to a tty.<br><br>
+        In particular ioctl sets errno for "Request or argp is not valid."
+        who then exits with status zero.<br>
+        <pre>
+        ioctl(0, SNDCTL_TMR_TIMEBASE, 0xbffff598) = -1 EINVAL (Invalid argument)
+        _exit(0) 
+        </pre>
+  </ul>
+  <br>
+  <br>
+
+
+  </body>
+</html>
