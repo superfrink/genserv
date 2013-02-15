@@ -51,7 +51,6 @@ int main(int argc, char **argv) {
 	char	*exec_args[MAX_ARGS];	// array of arguments to execvp()
 	int	i = 0;		// loop variable
 
-
 	if (argc < 3) {
 
 		printf("usage:\n");
@@ -68,6 +67,9 @@ int main(int argc, char **argv) {
 		printf("\neg: %s 12345 /usr/bin/uptime -V\n");
 		printf("    will listen on port 12345 and print the uptime ");
 		printf("version then exit.\n");
+		exit(-1);
+	} else if (MAX_ARGS - 2 < argc - 3) {
+		printf("Error: Maximum %d arguments to %s allowed.\n", MAX_ARGS - 2, argv[2]);
 		exit(-1);
 	}
 
